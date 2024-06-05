@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-
 import { getSuppliers } from "../../utils/api_suppliers";
 import { getSupplierCategories } from "../../utils/api_categories";
-
-
 import Header from "../../components/Header";
-import SupplierTable from "../../components/SupplierTable";  // Update the import
-
+import SupplierTable from "../../components/SupplierTable";
 import {
   Box,
   Typography,
@@ -19,17 +15,20 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
+import { useCookies } from "react-cookie"; 
 
 export default function Suppliers() {
   const navigate = useNavigate();
   const [category, setCategory] = useState("all");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(6);
-  const [user, setUser] = useState(null);
+  const [cookies] = useCookies(['currentUser']); 
+  const { currentUser = {} } = cookies;
+  const { role } = currentUser;
 
   const { data: rows = [] } = useQuery({
-    queryKey: ["suppliers", category, perPage, page],  
-    queryFn: () => getSuppliers(category, perPage, page),  
+    queryKey: ["suppliers", category, perPage, page],
+    queryFn: () => getSuppliers(category, perPage, page),
   });
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
@@ -37,11 +36,11 @@ export default function Suppliers() {
   });
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
+    // Redirect to login page if user is not logged in
+    if (!currentUser.token) {
+      navigate("/");
     }
-  }, []);
+  }, [currentUser, navigate]);
 
   return (
     <>
@@ -62,20 +61,20 @@ export default function Suppliers() {
               Suppliers
             </Typography>
             <Box sx={{ marginLeft: "auto" }}>
-              <Button
-                variant="contained"
-                color="success"
-                size="small"
-                disabled={!(user && user.role === "admin")} 
-                onClick={() => {
-                  navigate("/add-supplier");
-                }}
-              >
-                Add New
-              </Button>
+              {role === "admin" && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  onClick={() => {
+                    navigate("/add-supplier");
+                  }}
+                >
+                  Add New
+                </Button>
+              )}
             </Box>
           </Container>
-
           <Box sx={{ display: "flex", gap: "10px", marginTop: "10px" }}>
             <FormControl sx={{ width: "200px" }}>
               <InputLabel id="category-select-label">All Categories</InputLabel>
@@ -102,7 +101,7 @@ export default function Suppliers() {
         </Box>
 
         {rows.length > 0 ? (
-          <SupplierTable suppliers={rows} />  
+          <SupplierTable suppliers={rows} />
         ) : (
           <Typography align="center" sx={{ padding: "10px 0" }}>
             End of List.
@@ -120,7 +119,7 @@ export default function Suppliers() {
           }}
         >
           <Button
-            disabled={page === 1}  // Disable if on the first page
+            disabled={page === 1} // Disable if on the first page
             onClick={() => setPage(page - 1)}
           >
             Back

@@ -1,40 +1,33 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getUsers } from "../../utils/api_users";
 import UserTable from "../../components/UserTable";
 import Header from "../../components/Header";
+import { useCookies } from "react-cookie";
 
-import {
-  Box,
-  Typography,
-  Container,
-  Button,
-} from "@mui/material";
+import { Box, Typography, Container, Button } from "@mui/material";
 
 export default function Users() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(6);
-  const [user, setUser] = useState(null); // State to store user data
+  const [cookies] = useCookies(["currentUser"]);
+  const { currentUser = {} } = cookies;
+  const { role } = currentUser;
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
+    // Redirect if user is not an admin
+    if (role !== "admin") {
+      navigate("/"); // Redirect to login
     }
-  }, []);
+  }, [role, navigate]);
 
   const { data: rows = [] } = useQuery({
     queryKey: ["users", perPage, page],
     queryFn: () => getUsers(perPage, page),
   });
 
-  if (!user || user.role !== "admin") {
-    return <Typography>Unauthorized access. Please login as admin.</Typography>;
-  }
-
-  // Rest of the Users component logic
   return (
     <>
       <Container>

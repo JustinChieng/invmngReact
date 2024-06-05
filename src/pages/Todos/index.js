@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getTodos } from "../../utils/api_todos";
 import TodoTable from "../../components/TodoTable";
 import Header from "../../components/Header";
+import { useCookies } from "react-cookie";
 
-import {
-  Box,
-  Typography,
-  Container,
-  Button,
-} from "@mui/material";
+import { Box, Typography, Container, Button } from "@mui/material";
 
 export default function Todos() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(6);
-  const [user, setUser] = useState(null); // State to store user data
+  const [cookies] = useCookies(["currentUser"]);
+  const { currentUser = {} } = cookies;
+  const { role } = currentUser;
 
   const { data: rows = [] } = useQuery({
     queryKey: ["todos", perPage, page],
@@ -24,11 +22,11 @@ export default function Todos() {
   });
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
+    // Redirect to login page if user is not logged in
+    if (!currentUser.token) {
+      navigate("/");
     }
-  }, []);
+  }, [currentUser, navigate]);
 
   return (
     <>
@@ -49,17 +47,18 @@ export default function Todos() {
               Task to be completed for the staff
             </Typography>
             <Box sx={{ marginLeft: "auto" }}>
-              <Button
-                variant="contained"
-                color="success"
-                size="small"
-                disabled={!(user && user.role === "admin")} // Disable for non-admins
-                onClick={() => {
-                  navigate("/add-todo");
-                }}
-              >
-                Add New
-              </Button>
+              {role === "admin" ? (
+                <Button
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  onClick={() => {
+                    navigate("/add-todo");
+                  }}
+                >
+                  Add New
+                </Button>
+              ) : null}
             </Box>
           </Container>
         </Box>

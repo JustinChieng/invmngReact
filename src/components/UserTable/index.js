@@ -1,7 +1,15 @@
-import React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import { deleteUser } from "../../utils/api_users"; // Ensure you have this function
+import {
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import { deleteUser } from "../../utils/api_users";
 import { useSnackbar } from "notistack";
 
 export default function UserTable({ users }) {
@@ -29,7 +37,9 @@ export default function UserTable({ users }) {
   });
 
   const handleUserDelete = (userId) => {
-    const confirm = window.confirm("Are you sure you want to delete this user?");
+    const confirm = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
     if (confirm) {
       deleteUserMutation.mutate(userId);
     }

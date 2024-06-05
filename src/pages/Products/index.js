@@ -1,14 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-
-import { getProducts } from "../../utils/api_product";
-import { getCategories } from "../../utils/api_categories";
-import { getBoxes } from "../../utils/api_boxes";
-
 import Header from "../../components/Header";
-import ProductTable from "../../components/ProductTable"; // Update the import
-
+import ProductTable from "../../components/ProductTable";
 import {
   Box,
   Typography,
@@ -19,18 +13,24 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
+import { getProducts } from "../../utils/api_product";
+import { getCategories } from "../../utils/api_categories";
+import { getBoxes } from "../../utils/api_boxes";
+import { useCookies } from "react-cookie";
 
 export default function Products() {
   const navigate = useNavigate();
   const [category, setCategory] = useState("all");
-  const [box, setBox] = useState("all"); // Added box state
+  const [box, setBox] = useState("all");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(6);
-  const [user, setUser] = useState(null);
+  const [cookies, setCookies, removeCookie] = useCookies(["currentUser"]);
+  const { currentUser = {} } = cookies;
+  const { token } = currentUser;
 
   const { data: rows = [] } = useQuery({
-    queryKey: ["products", category, box, perPage, page], // Added box to queryKey
-    queryFn: () => getProducts(category, box, perPage, page), // Added box to getProducts
+    queryKey: ["products", category, box, perPage, page],
+    queryFn: () => getProducts(category, box, perPage, page),
   });
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
@@ -42,11 +42,10 @@ export default function Products() {
   });
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
+    if (!token) {
+      navigate("/");
     }
-  }, []);
+  }, [token, navigate]);
 
   return (
     <>
@@ -67,17 +66,18 @@ export default function Products() {
               Products
             </Typography>
             <Box sx={{ marginLeft: "auto" }}>
-              <Button
-                variant="contained"
-                color="success"
-                size="small"
-                disabled={!(user && user.role === "admin")} 
-                onClick={() => {
-                  navigate("/add-product");
-                }}
-              >
-                Add New
-              </Button>
+              {currentUser.role === "admin" && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  size="small"
+                  onClick={() => {
+                    navigate("/add-product");
+                  }}
+                >
+                  Add New
+                </Button>
+              )}
             </Box>
           </Container>
 
@@ -90,7 +90,7 @@ export default function Products() {
                 value={category}
                 onChange={(event) => {
                   setCategory(event.target.value);
-                  // reset the page to 1
+
                   setPage(1);
                 }}
                 label="Categories"
@@ -111,7 +111,7 @@ export default function Products() {
                 value={box}
                 onChange={(event) => {
                   setBox(event.target.value);
-                  // reset the page to 1
+
                   setPage(1);
                 }}
                 label="Boxes"
@@ -129,7 +129,7 @@ export default function Products() {
 
         {rows.length > 0 ? (
           <>
-            <ProductTable products={rows} /> {/* Render the ProductTable component with products */}
+            <ProductTable products={rows} />
             <Typography
               variant="body2"
               style={{ marginLeft: "10px", color: "red" }}
@@ -160,7 +160,10 @@ export default function Products() {
             Back
           </Button>
           <span>Page: {page}</span>
-          <Button disabled={rows.length === 0} onClick={() => setPage(page + 1)}>
+          <Button
+            disabled={rows.length === 0}
+            onClick={() => setPage(page + 1)}
+          >
             Next
           </Button>
         </Box>

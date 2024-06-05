@@ -1,16 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import { deleteTodo } from "../../utils/api_todos"; // Ensure you have this function
+import {
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import { deleteTodo } from "../../utils/api_todos";
 import { useSnackbar } from "notistack";
+import { useCookies } from "react-cookie";
 
 export default function TodoTable({ todos }) {
-  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
-
-  const [user, setUser] = useState(null); // State to store user data
+  const [cookies] = useCookies(["currentUser"]);
+  const { currentUser = {} } = cookies;
+  const { role } = currentUser;
 
   const deleteTodoMutation = useMutation({
     mutationFn: deleteTodo,
@@ -33,18 +41,13 @@ export default function TodoTable({ todos }) {
   });
 
   const handleTodoDelete = (todoId) => {
-    const confirm = window.confirm("Are you sure you want to delete this todo?");
+    const confirm = window.confirm(
+      "Are you sure you want to delete this todo?"
+    );
     if (confirm) {
       deleteTodoMutation.mutate(todoId);
     }
   };
-
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, []);
 
   return (
     <TableContainer component={Paper}>
@@ -60,14 +63,15 @@ export default function TodoTable({ todos }) {
             <TableRow key={todo._id}>
               <TableCell>{todo.name}</TableCell>
               <TableCell align="right">
-                <Button
-                  variant="contained"
-                  color="error"
-                  disabled={!(user && user.role === "admin")} // Disable for non-admins
-                  onClick={() => handleTodoDelete(todo._id)}
-                >
-                  Delete
-                </Button>
+                {role === "admin" ? (
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleTodoDelete(todo._id)}
+                  >
+                    Delete
+                  </Button>
+                ) : null}
               </TableCell>
             </TableRow>
           ))}

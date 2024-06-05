@@ -1,15 +1,26 @@
-import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import {
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 import { deleteProduct } from "../../utils/api_product"; // Ensure you have this function
 import { useSnackbar } from "notistack";
+import { useCookies } from "react-cookie";
 
 export default function ProductTable({ products }) {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
-  const [user, setUser] = useState(null); // State to store user data
+  const [cookies, setCookies, removeCookie] = useCookies(["currentUser"]);
+  const { currentUser = {} } = cookies;
+  const { role } = currentUser;
 
   const deleteProductMutation = useMutation({
     mutationFn: deleteProduct,
@@ -32,18 +43,13 @@ export default function ProductTable({ products }) {
   });
 
   const handleProductDelete = (productId) => {
-    const confirm = window.confirm("Are you sure you want to delete this product?");
+    const confirm = window.confirm(
+      "Are you sure you want to delete this product?"
+    );
     if (confirm) {
       deleteProductMutation.mutate(productId);
     }
   };
-
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, []);
 
   return (
     <TableContainer component={Paper}>
@@ -61,31 +67,53 @@ export default function ProductTable({ products }) {
         <TableBody>
           {products.map((product) => (
             <TableRow key={product._id}>
-              <TableCell style={{ color: product.quantity < 10 ? 'red' : 'inherit' }}>{product.name}</TableCell>
-              <TableCell style={{ color: product.quantity < 10 ? 'red' : 'inherit' }}>{product.description}</TableCell>
-              <TableCell style={{ color: product.quantity < 10 ? 'red' : 'inherit' }}>{product.quantity}</TableCell>
-              <TableCell style={{ color: product.quantity < 10 ? 'red' : 'inherit' }}>{product.category}</TableCell>
-              <TableCell style={{ color: product.quantity < 10 ? 'red' : 'inherit' }}>{product.box}</TableCell>
+              <TableCell
+                style={{ color: product.quantity < 10 ? "red" : "inherit" }}
+              >
+                {product.name}
+              </TableCell>
+              <TableCell
+                style={{ color: product.quantity < 10 ? "red" : "inherit" }}
+              >
+                {product.description}
+              </TableCell>
+              <TableCell
+                style={{ color: product.quantity < 10 ? "red" : "inherit" }}
+              >
+                {product.quantity}
+              </TableCell>
+              <TableCell
+                style={{ color: product.quantity < 10 ? "red" : "inherit" }}
+              >
+                {product.category}
+              </TableCell>
+              <TableCell
+                style={{ color: product.quantity < 10 ? "red" : "inherit" }}
+              >
+                {product.box}
+              </TableCell>
               <TableCell>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  disabled={!(user && user.role === "admin")} // Disable edit for non-admins
-                  onClick={() => {
-                    navigate("/products/" + product._id);
-                  }}
-                  sx={{ marginRight: 1 }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  disabled={!(user && user.role === "admin")} // Disable delete for non-admins
-                  onClick={() => handleProductDelete(product._id)}
-                >
-                  Delete
-                </Button>
+                {role === "admin" ? (
+                  <>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        navigate("/products/" + product._id);
+                      }}
+                      sx={{ marginRight: 1 }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => handleProductDelete(product._id)}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                ) : null}
               </TableCell>
             </TableRow>
           ))}

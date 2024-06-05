@@ -23,6 +23,7 @@ export const addTodo = async (data) => {
     {
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Bearer " + data.token //include token in api 
       },
     }
   );
@@ -36,6 +37,7 @@ export const updateTodo = async (data) => {
     {
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Bearer " + data.token //include token in api 
       },
     }
   );

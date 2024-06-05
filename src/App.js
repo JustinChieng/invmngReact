@@ -14,7 +14,7 @@ import SuppliersEdit from "./pages/SupplierEdit";
 import Todos from "./pages/Todos";
 import TodosAddNew from "./pages/TodosAdd";
 import Users from "./pages/Users";
-
+import { CookiesProvider } from "react-cookie";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -22,6 +22,7 @@ const queryClient = new QueryClient();
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <CookiesProvider defaultSetOptions={{ path: "/"}}>
       <SnackbarProvider
         maxSnack={3}
         autoHideDuration={2000}
@@ -51,6 +52,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </SnackbarProvider>
+      </CookiesProvider>
     </QueryClientProvider>
   );
 }

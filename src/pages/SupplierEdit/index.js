@@ -47,15 +47,13 @@ export default function SuppliersEdit() {
   const updateSupplierMutation = useMutation({
     mutationFn: updateSupplier,
     onSuccess: () => {
-      // display success message
       enqueueSnackbar("Supplier is updated", {
         variant: "success",
       });
-      // redirect back to home page
+
       navigate("/supplier");
     },
     onError: (error) => {
-      // display error message
       enqueueSnackbar(error.response.data.message, {
         variant: "error",
       });
@@ -70,11 +68,9 @@ export default function SuppliersEdit() {
       name: name,
       email: email,
       phone: phone,
-      category: category
+      category: category,
     });
   };
-
-
 
   // if API data is still loading
   if (isLoading) {

@@ -1,15 +1,24 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import { Container, Button, Box, Grid } from "@mui/material";
-import React from 'react';
+import { useCookies } from "react-cookie";
 
 export default function DashBoard() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [cookies] = useCookies(["currentUser"]);
+  const { currentUser } = cookies;
 
-    return (
-        <>
-            <style>
-                {`
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/");
+    }
+  }, [currentUser, navigate]);
+
+  return (
+    <>
+      <style>
+        {`
                     .hover-opacity::before {
                         content: '';
                         position: absolute;
@@ -30,77 +39,78 @@ export default function DashBoard() {
                         position: relative;
                         height: 100%;
                     }
+
+                    .dashboard-container {
+                        background: url('/images/loginbg.jpeg'); /* Apply background image here */
+                        background-size: cover;
+                        background-position: center;
+                    }
                 `}
-            </style>
-            <Container>
-                <Header />
-                <Grid 
-                    container 
-                    style={{ height: 'calc(100vh - 64px)' }}
-                    spacing={2}
-                >
-                    {/* Product */}
-                    <Grid
-                        item
-                        xs={12}
-                        md={6}
-                        className="background-container hover-opacity"
-                        style={{
-                            backgroundImage: 'url(/images/product.jpeg)',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                        }}
-                    >
-                        <Box
-                            display="flex"
-                            justifyContent="center"
-                            alignItems="center"
-                            height="100%"
-                            position="relative"
-                            zIndex={1}  // Ensures the button is above the overlay
-                        >
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                style={{ width: '200px', height: '100px', fontSize: '20px' }}
-                                onClick={() => navigate('/product')}
-                            >
-                                Product
-                            </Button>
-                        </Box>
-                    </Grid>
-                    {/* Supplier */}
-                    <Grid
-                        item
-                        xs={12}
-                        md={6}
-                        className="background-container hover-opacity"
-                        style={{
-                            backgroundImage: 'url(/images/supplier.jpeg)',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                        }}
-                    >
-                        <Box
-                            display="flex"
-                            justifyContent="center"
-                            alignItems="center"
-                            height="100%"
-                            position="relative"
-                            zIndex={1}  // Ensures the button is above the overlay
-                        >
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                style={{ width: '200px', height: '100px', fontSize: '20px' }}
-                                onClick={() => navigate('/supplier')}
-                            >
-                                Supplier
-                            </Button>
-                        </Box>
-                    </Grid>
-                </Grid>
-            </Container>
-        </>
-    );
+      </style>
+      <Container className="dashboard-container">
+        <Header />
+        <Grid container style={{ height: "calc(100vh - 64px)" }} spacing={2}>
+          <Grid
+            item
+            xs={12}
+            md={6}
+            className="background-container hover-opacity"
+            style={{
+              backgroundImage: "url(/images/product.jpeg)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              height="100%"
+              position="relative"
+              zIndex={1}
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ width: "200px", height: "100px", fontSize: "20px" }}
+                onClick={() => navigate("/product")}
+              >
+                Product
+              </Button>
+            </Box>
+          </Grid>
+
+          <Grid
+            item
+            xs={12}
+            md={6}
+            className="background-container hover-opacity"
+            style={{
+              backgroundImage: "url(/images/supplier.jpeg)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              height="100%"
+              position="relative"
+              zIndex={1}
+            >
+              <Button
+                variant="contained"
+                color="secondary"
+                style={{ width: "200px", height: "100px", fontSize: "20px" }}
+                onClick={() => navigate("/supplier")}
+              >
+                Supplier
+              </Button>
+            </Box>
+          </Grid>
+        </Grid>
+      </Container>
+    </>
+  );
 }

@@ -1,15 +1,27 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import {
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 import { deleteSupplier } from "../../utils/api_suppliers";
 import { useSnackbar } from "notistack";
+import { useCookies } from "react-cookie";
 
 export default function SupplierTable({ suppliers }) {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
-  const [user, setUser] = useState(null); // State to store user data
+  const [cookies] = useCookies(["currentUser"]);
+  const { currentUser = {} } = cookies;
+  const { role } = currentUser;
 
   const deleteSupplierMutation = useMutation({
     mutationFn: deleteSupplier,
@@ -32,18 +44,13 @@ export default function SupplierTable({ suppliers }) {
   });
 
   const handleSupplierDelete = (supplierId) => {
-    const confirm = window.confirm("Are you sure you want to delete this supplier?");
+    const confirm = window.confirm(
+      "Are you sure you want to delete this supplier?"
+    );
     if (confirm) {
       deleteSupplierMutation.mutate(supplierId);
     }
   };
-
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, []);
 
   return (
     <TableContainer component={Paper}>
@@ -65,25 +72,27 @@ export default function SupplierTable({ suppliers }) {
               <TableCell>{supplier.phone}</TableCell>
               <TableCell>{supplier.category}</TableCell>
               <TableCell>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  disabled={!(user && user.role === "admin")} // Disable edit for non-admins
-                  onClick={() => {
-                    navigate("/suppliers/" + supplier._id);
-                  }}
-                  sx={{ marginRight: 1 }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  disabled={!(user && user.role === "admin")} // Disable delete for non-admins
-                  onClick={() => handleSupplierDelete(supplier._id)}
-                >
-                  Delete
-                </Button>
+                {role === "admin" && (
+                  <>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        navigate("/suppliers/" + supplier._id);
+                      }}
+                      sx={{ marginRight: 1 }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => handleSupplierDelete(supplier._id)}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                )}
               </TableCell>
             </TableRow>
           ))}

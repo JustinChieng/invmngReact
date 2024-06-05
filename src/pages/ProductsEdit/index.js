@@ -24,7 +24,6 @@ export default function ProductsEdit() {
   const [category, setCategory] = useState("");
   const [box, setBox] = useState("");
 
-  // get data from product api: /products/:id
   const {
     data: product,
     error,
@@ -34,9 +33,7 @@ export default function ProductsEdit() {
     queryFn: () => getProduct(id),
   });
 
-  // when data is fetched from API, set the states for all the fields with its current value
   useEffect(() => {
-    // if product is not undefined
     if (product) {
       setName(product.name);
       setDescription(product.description);
@@ -49,15 +46,13 @@ export default function ProductsEdit() {
   const updateProductMutation = useMutation({
     mutationFn: updateProduct,
     onSuccess: () => {
-      // display success message
       enqueueSnackbar("Product is updated", {
         variant: "success",
       });
-      // redirect back to home page
+
       navigate("/product");
     },
     onError: (error) => {
-      // display error message
       enqueueSnackbar(error.response.data.message, {
         variant: "error",
       });
@@ -73,11 +68,9 @@ export default function ProductsEdit() {
       description: description,
       quantity: quantity,
       category: category,
-      box: box
+      box: box,
     });
   };
-
-
 
   // if API data is still loading
   if (isLoading) {
